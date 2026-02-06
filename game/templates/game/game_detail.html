@@ -1,0 +1,136 @@
+<{% extends 'base.html' %}
+
+{% block title %}{{ game.title }} - GameVault{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body {
+        padding: 40px;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: var(--link-color);
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .back-link:hover {
+        text-decoration: underline;
+    }
+
+    h1 {
+        margin-bottom: 20px;
+        font-weight: 500;
+    }
+
+    .content {
+        display: flex;
+        gap: 30px;
+        flex-wrap: wrap;
+    }
+
+    .cover {
+        flex-shrink: 0;
+    }
+
+    .cover img {
+        width: 300px;
+        max-width: 100%;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px var(--shadow);
+    }
+
+    .details {
+        flex: 1;
+        min-width: 300px;
+    }
+
+    .meta {
+        font-size: 14px;
+        color: var(--secondary-text);
+        margin-bottom: 15px;
+    }
+
+    .meta span {
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .meta strong {
+        color: var(--text-color);
+    }
+
+    .meta a {
+        color: var(--link-color);
+    }
+
+    .description {
+        font-size: 15px;
+        line-height: 1.6;
+        color: var(--text-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Back -->
+    <a href="{% url 'game_list' %}" class="back-link">
+        ← Back to games
+    </a>
+
+    <!-- Title -->
+    <h1>{{ game.title }}</h1>
+
+    <div class="content">
+        <!-- Cover image -->
+        <div class="cover">
+            {% if game.cover_image %}
+                <img src="{{ game.cover_image.url }}" alt="{{ game.title }}">
+            {% else %}
+                <p>No image available</p>
+            {% endif %}
+        </div>
+
+        <!-- Details -->
+        <div class="details">
+            <div class="meta">
+                {% if game.studio %}
+                    <span><strong>Studio:</strong> {{ game.studio }}</span>
+                {% endif %}
+
+                {% if game.platform.all %}
+                    <span><strong>Platform:</strong> 
+                        {% for platform in game.platform.all %}
+                            {{ platform }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </span>
+                {% endif %}
+
+                {% if game.release_date %}
+                    <span><strong>Release Date:</strong> {{ game.release_date }}</span>
+                {% endif %}
+
+                {% if game.metacritic_score %}
+                    <span><strong>Metacritic Score:</strong> {{ game.metacritic_score }}</span>
+                {% endif %}
+                
+                {% if game.metacritic_url %}
+                    <span><a href="{{ game.metacritic_url }}" target="_blank">View on Metacritic</a></span>
+                {% endif %}
+            </div>
+
+            <div class="description">
+                {{ game.description }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

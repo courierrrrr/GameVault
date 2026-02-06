@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Games - GameVault{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: var(--link-color);
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .back-link:hover {
+        text-decoration: underline;
+    }
+
+    h1 {
+        margin-bottom: 30px;
+        font-weight: 500;
+    }
+
+    .controls {
+        margin-bottom: 30px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .filter-select {
+        padding: 10px 15px;
+        font-size: 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+    }
+
+    #searchInput {
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .filter-select {
+        min-width: 150px;
+    }
+
+    .games-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .game {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        cursor: pointer;
+        position: relative;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        z-index: 1;
+    }
+
+    .game:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px var(--shadow);
+        z-index: 10;
+    }
+
+    .game-title {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--link-color);
+        text-decoration: none;
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .game-title:hover {
+        text-decoration: underline;
+    }
+
+    .preview {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 10px;
+        box-shadow: 0 8px 16px var(--shadow);
+        z-index: 1000;
+    }
+
+    .preview.visible {
+        display: block;
+    }
+
+    .preview.pinned {
+        display: block;
+    }
+
+    .preview img {
+        width: 100%;
+        border-radius: 4px;
+        margin-bottom: 10px;
+    }
+
+    .preview p {
+        font-size: 14px;
+        color: var(--secondary-text);
+        line-height: 1.5;
+    }
+
+    .no-results {
+        text-align: center;
+        color: var(--secondary-text);
+        font-size: 16px;
+        padding: 40px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <a href="{% url 'home' %}" class="back-link">← Home</a>
+    <h1>Games</h1>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Search games..." onkeyup="filterGames()">
+
+        <form method="get" id="filtersForm" style="display: contents;">
+            <select name="category" class="filter-select" onchange="this.form.submit()">
+                <option value="">All categories</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}"
+                      {% if request.GET.category == category.id|stringformat:"s" %}
+                          selected
+                      {% endif %}
+                    >
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <select name="sort" class="filter-select" onchange="this.form.submit()">
+                <option value="">Sort by...</option>
+                <option value="title_asc" {% if request.GET.sort == "title_asc" %}selected{% endif %}>
+                  Title (A–Z)
+                </option>
+                <option value="title_desc" {% if request.GET.sort == "title_desc" %}selected{% endif %}>
+                  Title (Z–A)
+                </option>
+                <option value="rating_asc" {% if request.GET.sort == "rating_asc" %}selected{% endif %}>
+                  Rating (Low → High)
+                </option>
+                <option value="rating_desc" {% if request.GET.sort == "rating_desc" %}selected{% endif %}>
+                  Rating (High → Low)
+                </option>
+                <option value="release_date_asc" {% if request.GET.sort == "release_date_asc" %}selected{% endif %}>
+                  Release Date (Old → New)
+                </option>
+                <option value="release_date_desc" {% if request.GET.sort == "release_date_desc" %}selected{% endif %}>
+                  Release Date (New → Old)
+                </option>
+            </select>
+        </form>
+    </div>
+
+    <div class="games-grid">
+        {% for game in games %}
+        <div class="game" data-title="{{ game.title|lower }}"
+        onmouseenter="showPreview(this)"
+        onmouseleave="hidePreview(this)" 
+        onclick="pinPreview(event, this)">
+            <a href="{% url 'game_detail' game.id %}" class="game-title" onclick="event.stopPropagation()">
+                {{ game.title }}
+            </a>
+            <div class="preview">
+                {% if game.cover_image %}
+                <img src="{{ game.cover_image.url }}" alt="{{ game.title }}">
+                {% endif %}
+                <p>{{ game.description|truncatechars:150 }}</p>
+            </div>
+        </div>
+        {% empty %}
+        <p class="no-results">No games found.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function showPreview(element) {
+        const preview = element.querySelector('.preview');
+        preview.classList.add('visible');
+    }
+
+    function hidePreview(element) {
+        const preview = element.querySelector('.preview');
+        if (!preview.classList.contains('pinned')) {
+            preview.classList.remove('visible');
+        }
+    }
+
+    function pinPreview(event, element) {
+        event.preventDefault();
+        const preview = element.querySelector('.preview');
+        preview.classList.toggle('pinned');
+        preview.classList.toggle('visible');
+    }
+
+    function filterGames() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const games = document.querySelectorAll('.game');
+
+        games.forEach(game => {
+            const title = game.getAttribute('data-title');
+            if (title.includes(searchTerm)) {
+                game.style.display = 'block';
+            } else {
+                game.style.display = 'none';
+            }
+        });
+    }
+</script>
+{% endblock %}

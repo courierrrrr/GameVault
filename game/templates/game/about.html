@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}About - GameVault{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body {
+        text-align: center;
+        padding-top: 120px;
+    }
+
+    .logo {
+        font-size: 64px;
+        font-weight: bold;
+        letter-spacing: -2px;
+    }
+
+    .logo span:nth-child(1) { color: #4285F4; }
+    .logo span:nth-child(2) { color: #DB4437; }
+    .logo span:nth-child(3) { color: #F4B400; }
+    .logo span:nth-child(4) { color: #4285F4; }
+    .logo span:nth-child(5) { color: #0F9D58; }
+    .logo span:nth-child(6) { color: #DB4437; }
+
+    .content {
+        width: 500px;
+        margin: 40px auto;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    a {
+        color: var(--link-color);
+        text-decoration: underline;
+    }
+
+    a:hover {
+        text-decoration: none;
+    }
+
+    .footer {
+        margin-top: 60px;
+        font-size: 12px;
+        color: var(--secondary-text);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="logo">
+    <span>A</span><span>b</span><span>o</span><span>u</span><span>t</span><span>.</span>
+</div>
+
+<div class="content">
+    <p><strong>Hi, I'm Georgia!</strong></p> 
+    <p>
+        I am currently studying for my <strong>Master's degree in Applied Informatics</strong>
+        at <strong>IHU University</strong>.
+    </p>
+
+    <p>
+        This project was created as part of my studies!
+    </p>
+
+    <p><strong>Hope you enjoy! 🎮</strong></p>
+
+    <p>
+        <a href="{% url 'home' %}">Back to Home</a>
+    </p>
+</div>
+{% endblock %}
